@@ -1,0 +1,313 @@
+# rosita global config — a dogfooded port of ~/.claude/CLAUDE.md.
+#
+# Each section of the global CLAUDE.md becomes one reusable fragment; the
+# `machine` profile composes them into the overlay rosita renders off-repo (or
+# wherever you bind it). Edit these in `rosita studio` or here directly.
+
+[[fragments]]
+id = "terse-comms"
+description = "Terse communication"
+category = "Operating Style"
+guidance = '''
+Default to terse: lead with the result and what changed; skip preamble and
+don't restate the question.
+
+For non-trivial decisions, briefly explain the reasoning, the tradeoffs, and the
+alternatives considered.
+
+When asking the user to choose, make each option and its header self-contained:
+spell out what the choice means and its consequence in plain language. No
+undefined jargon, symbol soup, bare section references, or cryptic chips.
+Terseness is for prose — never at the cost of a readable decision.
+'''
+
+[[fragments]]
+id = "guardrails"
+description = "Safety guardrails"
+category = "Operating Style"
+guidance = '''
+**Never:**
+
+- Commit or push directly to `main`/`master` — always work on a branch.
+- Print, log, or commit secrets, credentials, or `.env` files.
+- Run destructive or hard-to-reverse actions (`rm -rf`, DB drops, bulk deletes,
+  file overwrites) without confirmation.
+
+**Ask first:**
+
+- Before modifying files the user didn't mention.
+- After two failed attempts at the same problem — don't keep retrying blindly.
+- Before installing new dependencies, changing schemas, or restructuring directories.
+'''
+
+[[fragments]]
+id = "conventional-commits"
+description = "Conventional commits"
+category = "Engineering Standards"
+guidance = '''
+Commit at logical checkpoints with clear messages — don't wait to be told.
+
+Use Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, …). Imperative
+subject ≤72 chars; the body explains *why* when it is non-obvious.
+'''
+
+# Environment discovery — recreated natively from rosita's built-in providers
+# (no external `agent-env` script). Each section is a provider-backed fragment;
+# providers always run trusted (no `rosita allow` needed) and probe live at render
+# time. In studio's read-only preview they show the placeholder until a render
+# populates the cache.
+
+[[fragments]]
+id = "environment"
+description = "Environment ground truth"
+category = "Local Environment"
+guidance = '''
+Environment is ground truth, not assumption. The sections below are probed live
+from this machine at render time — treat them as authoritative for identity,
+network peers, running containers, and installed tooling. Before reasoning about
+deployment, networking, or host targets, consult them. A missing section means
+the probe found nothing (tool absent, daemon down, or logged out), so ask rather
+than guess.
+'''
+
+# Each environment section is an owned bash script — the commands live here, not
+# in a compiled provider. They run trusted (global layer), embedding their stdout
+# at render time. Pure scripts (no guidance template) so studio opens them for
+# view/edit; studio's read-only preview shows a "runs at render" placeholder card.
+
+[[fragments]]
+id = "host"
+description = "Machine detection"
+category = "Local Environment"
+cache = "5m"
+script_lang = "bash"
+command = '''
+detect_os() {
+  case "$(uname -s 2>/dev/null || echo unknown)" in
+    Darwin) echo "macOS" ;;
+    Linux)  echo "Linux" ;;
+    *)      uname -s 2>/dev/null || echo unknown ;;
+  esac
+}
+distro_info() {
+  if [ -r /etc/os-release ]; then
+    . /etc/os-release
+    printf '%s %s' "${NAME:-Linux}" "${VERSION_ID:-}"
+  elif command -v sw_vers >/dev/null 2>&1; then
+    printf 'macOS %s (build %s)' "$(sw_vers -productVersion 2>/dev/null)" "$(sw_vers -buildVersion 2>/dev/null)"
+  else
+    echo unknown
+  fi
+}
+printf 'hostname:  %s\n' "$(hostname 2>/dev/null || echo unknown)"
+printf 'user:      %s\n' "${USER:-$(id -un 2>/dev/null || echo unknown)}"
+printf 'os:        %s\n' "$(detect_os)"
+printf 'distro:    %s\n' "$(distro_info)"
+printf 'arch:      %s\n' "$(uname -m 2>/dev/null || echo unknown)"
+printf 'kernel:    %s\n' "$(uname -r 2>/dev/null || echo unknown)"
+printf 'shell:     %s\n' "${SHELL:-unknown}"
+if command -v uptime >/dev/null 2>&1; then
+  up=$(uptime | sed -E 's/^[^,]*up //; s/,[[:space:]]+[0-9]+ users?.*$//; s/,[[:space:]]+load[[:space:]]+average.*$//')
+  [ -n "$up" ] && printf 'uptime:    %s\n' "$up"
+fi
+'''
+
+[[fragments]]
+id = "tailnet"
+description = "Tailnet discovery"
+category = "Local Environment"
+cache = "5m"
+script_lang = "bash"
+command = '''
+ts=""
+if command -v tailscale >/dev/null 2>&1; then
+  ts=$(command -v tailscale)
+else
+  for p in \
+    /Applications/Tailscale.app/Contents/MacOS/Tailscale \
+    /opt/homebrew/bin/tailscale \
+    /usr/local/bin/tailscale; do
+    [ -x "$p" ] && { ts="$p"; break; }
+  done
+fi
+[ -n "$ts" ] || exit 0
+"$ts" status 2>/dev/null || true
+'''
+
+[[fragments]]
+id = "containers"
+description = "Container runtime"
+category = "Local Environment"
+cache = "5m"
+script_lang = "bash"
+command = '''
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+  docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null
+fi
+if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
+  podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null
+fi
+'''
+
+[[fragments]]
+id = "ai-tools"
+description = "AI tooling"
+category = "Local Environment"
+cache = "5m"
+script_lang = "bash"
+command = '''
+for tool in claude codex gemini opencode cursor-agent aider droid amp q goose; do
+  if command -v "$tool" >/dev/null 2>&1; then
+    v=$("$tool" --version 2>/dev/null | head -n1)
+    printf '%-15s %s\n' "$tool" "$v"
+  fi
+done
+if command -v gh >/dev/null 2>&1 && gh extension list 2>/dev/null | grep -qi copilot; then
+  printf '%-15s %s\n' "gh copilot" "(gh extension)"
+fi
+'''
+
+[[fragments]]
+id = "toolchain"
+description = "Toolchain detection"
+category = "Local Environment"
+cache = "5m"
+script_lang = "bash"
+command = '''
+for tool in node pnpm python3 uv rg fd gh tailscale docker; do
+  if command -v "$tool" >/dev/null 2>&1; then
+    v=$("$tool" --version 2>/dev/null | head -n1)
+    printf '%-10s %s\n' "$tool" "$v"
+  fi
+done
+'''
+
+[[fragments]]
+id = "planning-workflow"
+description = "Plan before implementing"
+category = "Operating Style"
+guidance = '''
+For non-trivial work, create a plan before implementation:
+
+1. Explore 2–3 different approaches independently — in parallel if the tool
+   supports concurrent sub-agents, sequentially otherwise.
+2. Synthesize the candidates into one preferred plan.
+3. Run a critic pass that actively looks for flaws — use a separate sub-agent or
+   fresh session; self-critique inside the planning context tends to rubber-stamp.
+4. Revise based on the critic's findings.
+5. Get a cross-model review of the final candidate before implementing (a peer AI
+   CLI or a sub-agent on a different, comparable-or-stronger model).
+
+Skip the full workflow for trivial edits, typos, obvious one-file fixes, or work
+that's just mechanically applying a known pattern across N touchpoints.
+
+A final plan states: objective, relevant context, approach, assumptions, risks,
+validation steps, rollback notes, and the first implementation step.
+'''
+
+[[fragments]]
+id = "validation"
+description = "Build & verify before done"
+category = "Engineering Standards"
+guidance = '''
+For any non-trivial change, build the automated harness as part of the work, and
+match it to the change: web UI → Playwright tests for visuals and functionality;
+API/logic → unit/integration tests; data/scripts → assertions on output.
+
+If a harness would take significant effort (e.g. complex E2E setup), surface that
+and ask for manual validation — don't skip silently.
+
+Before declaring work done, run the build, tests, and linter and report results
+honestly. If something failed or was skipped, say so plainly — never claim
+success you didn't verify.
+'''
+
+[[fragments]]
+id = "nextjs-conventions"
+description = "Next.js conventions"
+category = "Stack Conventions"
+guidance = "Next.js app. Respect the existing app/pages router convention and keep server/client component boundaries explicit. Use pnpm for scripts and dependencies."
+
+[[fragments]]
+id = "baseline"
+description = "Follow repo conventions"
+category = "Operating Style"
+guidance = "Follow the repository's existing conventions and keep changes minimal, focused, and well-tested. Match the surrounding code's style and naming rather than imposing your own."
+
+[[fragments]]
+id = "branch-discipline"
+description = "Never commit to main"
+category = "Safety"
+guidance = "Never commit or push directly to the main/master branch — always work on a branch and open a pull request instead of pushing to shared branches."
+
+[[fragments]]
+id = "secrets-hygiene"
+description = "Never commit or log secrets"
+category = "Security"
+guidance = "Never print, log, or commit secrets, credentials, tokens, or `.env` files. Keep sensitive values out of code and out of command output."
+
+[[fragments]]
+id = "ask-before-risky"
+description = "Ask before risky actions"
+category = "Safety"
+guidance = "Confirm before destructive or hard-to-reverse actions (`rm -rf`, database drops, bulk deletes, file overwrites, history rewrites). Prefer a dry run or a plan first."
+
+[[fragments]]
+id = "validate-before-done"
+description = "Build, test, and lint before done"
+category = "Quality"
+guidance = "Before declaring work done, run the build, the tests, and the linter, and report the results honestly. If something failed or was skipped, say so plainly — don't claim success you didn't verify."
+
+[[fragments]]
+id = "testing-discipline"
+description = "Cover changes with tests"
+category = "Quality"
+guidance = "Add or update tests to match the change: unit or integration tests for logic, end-to-end tests for user-facing behavior. If a real harness is impractical, say so instead of skipping silently."
+
+[[fragments]]
+id = "go-conventions"
+description = "Go conventions"
+category = "Stack Conventions"
+guidance = "Go project. Use the standard toolchain (`go build`, `go test`, `go vet`, `gofmt`); add golangci-lint for stricter checks. Handle errors explicitly — don't silently discard them."
+
+[[profiles]]
+name = "machine"
+targets = ["machine"]
+fragments = ["terse-comms", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation", "super-secret-fragment-info"]
+
+# Rust repos: the language-agnostic working rules, scoped to the `rust` stack so
+# every Cargo project auto-binds it. Created in studio (originally mis-saved to
+# ~/.rosita/config.toml, which the loader never reads); relocated here.
+[[profiles]]
+name = "Rust Profile"
+targets = ["rust"]
+fragments = [
+  "terse-comms",
+  "conventional-commits",
+  "planning-workflow",
+  "validation",
+]
+
+[[profiles]]
+name = "nextjs"
+targets = ["nextjs"]
+fragments = ["nextjs-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
+
+[[profiles]]
+name = "go"
+targets = ["go"]
+fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
+
+[[fragments]]
+id = "slint-conventions"
+description = "Slint GUI conventions"
+category = "Stack Conventions"
+guidance = "Slint GUI app. The UI is declared in `.slint` files (here under `ui/`) and compiled to Rust by `slint-build` in `build.rs` (pulled in with `slint::include_modules!`). Edit the `.slint` markup for layout, components, properties, and callbacks — never hand-edit the generated Rust. Drive UI↔logic through the generated component handles: set properties, invoke/handle callbacks. `cargo build`/`cargo run` recompiles the `.slint` sources."
+
+# The `slint` profile binds when the `slint` target matches (see the [[targets]]
+# block in local.toml). On a box without that target it simply never matches, so
+# this is safe to keep in the shareable config.toml.
+[[profiles]]
+name = "slint"
+targets = ["slint"]
+fragments = ["slint-conventions", "terse-comms", "conventional-commits", "planning-workflow", "validation"]

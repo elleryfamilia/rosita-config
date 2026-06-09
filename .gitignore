@@ -1,0 +1,13 @@
+# rosita sync — keep machine-private and generated files out of the repo.
+local.toml
+bindings.toml
+generated/
+cache/
+logs/
+
+# stray editor/studio backups
+*.bak
+
+# machine-specific self-update receipt (must not sync across boxes)
+rosita-receipt.json
+*.bak*
