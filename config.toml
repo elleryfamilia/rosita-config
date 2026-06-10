@@ -32,6 +32,9 @@ guidance = '''
 - Print, log, or commit secrets, credentials, or `.env` files.
 - Run destructive or hard-to-reverse actions (`rm -rf`, DB drops, bulk deletes,
   file overwrites) without confirmation.
+- Suggest or execute a command that could end the user's session (login/seat
+  manager restarts, killing the compositor, network resets over SSH, etc.)
+  without double-checking the blast radius and being transparent about the risk.
 
 **Ask first:**
 
@@ -273,7 +276,7 @@ guidance = "Go project. Use the standard toolchain (`go build`, `go test`, `go v
 [[profiles]]
 name = "machine"
 targets = ["machine"]
-fragments = ["terse-comms", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation", "super-secret-fragment-info"]
+fragments = ["terse-comms", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
 
 # Rust repos: the language-agnostic working rules, scoped to the `rust` stack so
 # every Cargo project auto-binds it. Created in studio (originally mis-saved to
