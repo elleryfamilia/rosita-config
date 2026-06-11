@@ -307,6 +307,12 @@ description = "Slint GUI conventions"
 category = "Stack Conventions"
 guidance = "Slint GUI app. The UI is declared in `.slint` files (here under `ui/`) and compiled to Rust by `slint-build` in `build.rs` (pulled in with `slint::include_modules!`). Edit the `.slint` markup for layout, components, properties, and callbacks — never hand-edit the generated Rust. Drive UI↔logic through the generated component handles: set properties, invoke/handle callbacks. `cargo build`/`cargo run` recompiles the `.slint` sources."
 
+[[fragments]]
+id = "python-conventions"
+description = "Python conventions"
+category = "Stack Conventions"
+guidance = "Python project. Use uv for environments and dependencies, ruff for linting and formatting, and pytest for tests."
+
 # The `slint` profile binds when the `slint` target matches (see the [[targets]]
 # block in local.toml). On a box without that target it simply never matches, so
 # this is safe to keep in the shareable config.toml.
@@ -314,3 +320,8 @@ guidance = "Slint GUI app. The UI is declared in `.slint` files (here under `ui/
 name = "slint"
 targets = ["slint"]
 fragments = ["slint-conventions", "terse-comms", "conventional-commits", "planning-workflow", "validation"]
+
+[[profiles]]
+name = "python"
+targets = ["python"]
+fragments = ["python-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
