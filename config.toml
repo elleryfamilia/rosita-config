@@ -494,6 +494,30 @@ description = "Slint GUI conventions"
 category = "Stack Conventions"
 guidance = "Slint GUI app. The UI is declared in `.slint` files (here under `ui/`) and compiled to Rust by `slint-build` in `build.rs` (pulled in with `slint::include_modules!`). Edit the `.slint` markup for layout, components, properties, and callbacks — never hand-edit the generated Rust. Drive UI↔logic through the generated component handles: set properties, invoke/handle callbacks. `cargo build`/`cargo run` recompiles the `.slint` sources."
 
+[[fragments]]
+id = "development-phase-active-initial-build"
+description = "Development Phase: Active Initial Build"
+category = "Operating Style"
+guidance = """
+## Development Phase: Active Initial Build
+
+This system is in its initial, active development phase. Prioritize delivering the right long-term solution over preserving existing implementation details.
+
+Do not treat current architecture, APIs, data models, file structure, or internal conventions as fixed unless explicitly stated. If a better design requires changing or replacing a significant part of what already exists, call that out clearly and recommend the change.
+
+Backward compatibility is not a primary constraint at this stage. Offer migrations, adapters, or compatibility layers only when they are low-effort and do not compromise the quality of the solution. Do not spend substantial effort preserving old behavior, outdated structure, or temporary implementation choices.
+
+When proposing changes:
+
+* Prefer simple, coherent architecture over incremental patches.
+* Identify existing code that should be replaced rather than extended.
+* Explain why a larger change is justified when recommending one.
+* Avoid over-engineering compatibility for code that is still experimental.
+* Optimize for correctness, maintainability, and future flexibility.
+
+Assume the goal is to build the system properly, not to protect early implementation decisions.
+"""
+
 # The `slint` profile binds when the `slint` target matches (see the [[targets]]
 # block in local.toml). On a box without that target it simply never matches, so
 # this is safe to keep in the shareable config.toml.
