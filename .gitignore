@@ -11,3 +11,6 @@ logs/
 # machine-specific self-update receipt (must not sync across boxes)
 rosita-receipt.json
 *.bak*
+
+# machine-specific self-update timestamp (must not sync across boxes)
+update-check
