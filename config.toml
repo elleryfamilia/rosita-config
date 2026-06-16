@@ -480,13 +480,9 @@ name = "go"
 targets = ["go"]
 fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain"]
 
-# Binds to any Bun project via the gitignored custom `bun` target in local.toml
-# (matches a `bun.lock`). Tailored to savio's stack today (Hono / Drizzle / BullMQ
-# / Vitest); broaden bun-conventions if other Bun repos pick this up.
 [[profiles]]
 name = "bun"
-targets = ["bun"]
-fragments = ["bun-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain", "containers"]
+fragments = ["terse-comms", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "work-summary", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
 
 [[fragments]]
 id = "slint-conventions"
