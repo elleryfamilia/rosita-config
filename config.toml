@@ -62,12 +62,13 @@ id = "environment"
 description = "Environment ground truth"
 category = "Local Environment"
 guidance = '''
-Environment is ground truth, not assumption. The sections below are probed live
-from this machine at render time — treat them as authoritative for identity,
-network peers, running containers, and installed tooling. Before reasoning about
-deployment, networking, or host targets, consult them. A missing section means
-the probe found nothing (tool absent, daemon down, or logged out), so ask rather
-than guess.
+Environment is ground truth, not assumption. The sections that follow are probed
+live from this machine at render time — treat them as authoritative for what is
+actually installed, running, and reachable here. Consult them before assuming a
+tool, version, service, or host exists, and prefer them over guessing. A missing
+or empty section means the probe found nothing (tool absent, daemon down, or
+logged out), so ask rather than guess. These are point-in-time facts about the
+machine — don't bake them into committed code, config, or docs.
 '''
 
 # Each environment section is an owned bash script — the commands live here, not
@@ -131,7 +132,13 @@ else
   done
 fi
 [ -n "$ts" ] || exit 0
-"$ts" status 2>/dev/null || true
+status=$("$ts" status 2>/dev/null) || true
+if [ -n "$status" ]; then
+  echo "Hosts reachable on this machine's tailnet — these are the SSH / deploy targets"
+  echo "available by name or 100.x address. Lines marked offline aren't reachable now."
+  echo
+  printf '%s\n' "$status"
+fi
 '''
 
 [[fragments]]
@@ -141,11 +148,20 @@ category = "Local Environment"
 cache = "5m"
 script_lang = "bash"
 command = '''
-if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-  docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null
-fi
-if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
-  podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null
+# Guards live inside `if` (not bare `&&` chains) so a missing runtime can't trip
+# errexit and abort the script before the output block.
+have_docker=0
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then have_docker=1; fi
+have_podman=0
+if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then have_podman=1; fi
+if [ "$have_docker" = 1 ] || [ "$have_podman" = 1 ]; then
+  echo "Containers running on this machine right now (host-wide, not just this repo)."
+  echo "These are the local services actually available — check here before assuming a"
+  echo "database, cache, or queue is or isn't up. PORTS are host->container; if no rows"
+  echo "follow, nothing is running locally."
+  echo
+  if [ "$have_docker" = 1 ]; then docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null; fi
+  if [ "$have_podman" = 1 ]; then podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null; fi
 fi
 '''
 
@@ -156,14 +172,23 @@ category = "Local Environment"
 cache = "5m"
 script_lang = "bash"
 command = '''
+out=""
 for tool in claude codex gemini opencode cursor-agent aider droid amp q goose; do
   if command -v "$tool" >/dev/null 2>&1; then
-    v=$("$tool" --version 2>/dev/null | head -n1)
-    printf '%-15s %s\n' "$tool" "$v"
+    out="$out$(printf '%-15s %s\n' "$tool" "$("$tool" --version 2>/dev/null | head -n1)")
+"
   fi
 done
 if command -v gh >/dev/null 2>&1 && gh extension list 2>/dev/null | grep -qi copilot; then
-  printf '%-15s %s\n' "gh copilot" "(gh extension)"
+  out="$out$(printf '%-15s %s\n' "gh copilot" "(gh extension)")
+"
+fi
+if [ -n "$out" ]; then
+  echo "Peer AI coding CLIs installed here. Use one of these (a different, comparable-or-"
+  echo "stronger model than the one doing the work) for the cross-model review / second-"
+  echo "opinion step before implementing — shell out to it rather than skipping the step."
+  echo
+  printf '%s' "$out"
 fi
 '''
 
@@ -174,12 +199,125 @@ category = "Local Environment"
 cache = "5m"
 script_lang = "bash"
 command = '''
-for tool in node pnpm python3 uv rg fd gh tailscale docker; do
+echo "Toolchain installed on this machine right now, resolved at render time."
+echo "Source of truth for what's available and which version — don't assume a tool"
+echo "exists or guess its version; if a tool you need isn't listed, it isn't installed."
+echo
+# `go` reports its version via `go version`, not `--version`; everything else
+# answers to `--version`. Tools absent from PATH are silently skipped.
+tool_version() {
+  case "$1" in
+    go) go version 2>/dev/null ;;
+    *)  "$1" --version 2>/dev/null | head -n1 ;;
+  esac
+}
+for tool in node bun deno pnpm yarn python3 uv ruff rustc cargo go git rg fd gh docker; do
   if command -v "$tool" >/dev/null 2>&1; then
-    v=$("$tool" --version 2>/dev/null | head -n1)
-    printf '%-10s %s\n' "$tool" "$v"
+    printf '%-10s %s\n' "$tool" "$(tool_version "$tool")"
   fi
 done
+'''
+
+# Repo-scoped (not machine): lists the commands THIS project defines so the agent
+# uses real entry points instead of inventing them. The trailing `if … fi` keeps
+# the script's exit status 0 — rosita DROPS a probe's whole output when the script
+# exits non-zero (a final `[ cond ] && cmd` that short-circuits is the classic
+# trap). `set +e` is just belt-and-suspenders. Stays stable within a session, so a
+# render-time snapshot is safe (unlike git state, which churns mid-conversation).
+[[fragments]]
+id = "project-scripts"
+description = "Runnable project commands"
+category = "Project"
+cache = "5m"
+script_lang = "bash"
+command = '''
+set +e
+out=""
+add() { out="${out}$1
+"; }
+
+# --- package.json scripts (node / bun / nextjs) ---
+if [ -f package.json ]; then
+  pm="<pm> run"
+  [ -f package-lock.json ] && pm="npm run"
+  [ -f yarn.lock ] && pm="yarn"
+  [ -f pnpm-lock.yaml ] && pm="pnpm run"
+  [ -f bun.lock ] && pm="bun run"
+  [ -f bun.lockb ] && pm="bun run"
+  scripts=""
+  if command -v jq >/dev/null 2>&1; then
+    scripts=$(jq -r '.scripts // {} | to_entries[] | "  \(.key) — \(.value | gsub("\\s+";" "))"' package.json 2>/dev/null)
+  elif command -v node >/dev/null 2>&1; then
+    scripts=$(node -e 'try{const s=(require(process.cwd()+"/package.json").scripts)||{};for(const[k,v]of Object.entries(s))console.log("  "+k+" — "+String(v).replace(/\s+/g," ").trim())}catch(e){}' 2>/dev/null)
+  elif command -v bun >/dev/null 2>&1; then
+    scripts=$(bun -e 'try{const s=(require(process.cwd()+"/package.json").scripts)||{};for(const[k,v]of Object.entries(s))console.log("  "+k+" — "+String(v).replace(/\s+/g," ").trim())}catch(e){}' 2>/dev/null)
+  fi
+  if [ -n "$scripts" ]; then
+    add "package.json scripts (run with \`$pm <name>\`):"
+    add "$scripts"
+    add ""
+  fi
+fi
+
+# --- Makefile targets ---
+for mk in Makefile makefile GNUmakefile; do
+  if [ -f "$mk" ]; then
+    targets=$(grep -E '^[a-zA-Z0-9][a-zA-Z0-9_.-]*:' "$mk" 2>/dev/null | grep -v ':=' | sed -E 's/:.*//' | sort -u | sed 's/^/  /')
+    if [ -n "$targets" ]; then
+      add "Makefile targets (run with \`make <target>\`):"
+      add "$targets"
+      add ""
+    fi
+    break
+  fi
+done
+
+# --- justfile recipes ---
+for jf in justfile Justfile .justfile; do
+  if [ -f "$jf" ]; then
+    recipes=""
+    if command -v just >/dev/null 2>&1; then
+      recipes=$(just --list --unsorted 2>/dev/null | sed '1d')
+    else
+      recipes=$(grep -E '^[a-zA-Z0-9][a-zA-Z0-9_-]*( [^:]*)?:' "$jf" 2>/dev/null | sed -E 's/[ :].*//' | sort -u | sed 's/^/  /')
+    fi
+    if [ -n "$recipes" ]; then
+      add "justfile recipes (run with \`just <recipe>\`):"
+      add "$recipes"
+      add ""
+    fi
+    break
+  fi
+done
+
+# --- Cargo (rust / slint) ---
+if [ -f Cargo.toml ]; then
+  add "Cargo: \`cargo build | test | run | clippy | fmt\` (standard)."
+  for cfg in .cargo/config.toml .cargo/config; do
+    if [ -f "$cfg" ]; then
+      aliases=$(sed -n '/^\[alias\]/,/^\[/p' "$cfg" 2>/dev/null | grep -E '^[a-zA-Z]')
+      if [ -n "$aliases" ]; then
+        add "  cargo aliases:"
+        add "$(printf '%s\n' "$aliases" | sed 's/^/    /')"
+      fi
+      break
+    fi
+  done
+  add ""
+fi
+
+# --- Go module ---
+if [ -f go.mod ]; then
+  add "Go module: \`go build ./... | go test ./... | go vet ./... | gofmt\` (standard)."
+  add ""
+fi
+
+if [ -n "$out" ]; then
+  echo "Runnable commands this repo actually defines, detected at render time. Prefer these"
+  echo "over inventing build/test/lint/run invocations — they're the project's own entry points."
+  echo
+  printf '%s' "$out"
+fi
 '''
 
 [[fragments]]
@@ -220,6 +358,23 @@ and ask for manual validation — don't skip silently.
 Before declaring work done, run the build, tests, and linter and report results
 honestly. If something failed or was skipped, say so plainly — never claim
 success you didn't verify.
+'''
+
+[[fragments]]
+id = "work-summary"
+description = "Summarize done work + next steps"
+category = "Operating Style"
+guidance = '''
+When you finish a piece of work, close with two short, scannable bullet lists:
+
+- **Done** — one bullet per thing you completed, in plain language. Say what
+  changed and where, not how it was implemented. Anyone should be able to read
+  it and know what got done.
+- **Next steps** — one concrete action per bullet for what remains or should
+  follow. If nothing remains, say so explicitly rather than dropping the list.
+
+Keep both lists tight: no preamble, no restating the request, no burying the
+summary in prose.
 '''
 
 [[fragments]]
@@ -270,6 +425,28 @@ description = "Go conventions"
 category = "Stack Conventions"
 guidance = "Go project. Use the standard toolchain (`go build`, `go test`, `go vet`, `gofmt`); add golangci-lint for stricter checks. Handle errors explicitly — don't silently discard them."
 
+[[fragments]]
+id = "bun-conventions"
+description = "Bun + TypeScript conventions"
+category = "Stack Conventions"
+guidance = '''
+Bun + TypeScript project (ESM — `"type": "module"`). Bun is both the runtime and
+the package manager: use `bun install`, `bun run <script>`, and `bunx`; don't
+introduce npm/pnpm/yarn or a second lockfile. TypeScript sources run directly
+(e.g. `bun run src/cli/index.ts`) — there's no separate backend build step.
+
+- Typecheck with `bun run typecheck` (`tsc --noEmit`); format and lint with
+  Prettier via `bun run format` / `bun run lint`.
+- Tests run on Vitest through the package scripts (`bun run test`, `test:unit`,
+  `test:integration`, `test:smoke`). These invoke `node node_modules/.bin/vitest`
+  on purpose — run them via the scripts, not `bun test`.
+- Persistence is Drizzle ORM on Postgres (with pgvector). Change the schema in
+  the Drizzle sources, then `bun run db:generate` and `bun run db:migrate`; never
+  hand-edit generated migrations.
+- Background work runs on BullMQ over Redis; the HTTP layer is Hono.
+- Keep secrets in `.env` (see `.env.example`) — never commit or log them.
+'''
+
 [[profiles]]
 name = "machine"
 targets = ["machine"]
@@ -286,17 +463,30 @@ fragments = [
   "conventional-commits",
   "planning-workflow",
   "validation",
+  "work-summary",
+  "project-scripts",
+  "environment",
+  "toolchain",
+  "ai-tools",
 ]
 
 [[profiles]]
 name = "nextjs"
 targets = ["nextjs"]
-fragments = ["nextjs-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
+fragments = ["nextjs-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain"]
 
 [[profiles]]
 name = "go"
 targets = ["go"]
-fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
+fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain"]
+
+# Binds to any Bun project via the gitignored custom `bun` target in local.toml
+# (matches a `bun.lock`). Tailored to savio's stack today (Hono / Drizzle / BullMQ
+# / Vitest); broaden bun-conventions if other Bun repos pick this up.
+[[profiles]]
+name = "bun"
+targets = ["bun"]
+fragments = ["bun-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain", "containers"]
 
 [[fragments]]
 id = "slint-conventions"
@@ -310,4 +500,4 @@ guidance = "Slint GUI app. The UI is declared in `.slint` files (here under `ui/
 [[profiles]]
 name = "slint"
 targets = ["slint"]
-fragments = ["slint-conventions", "terse-comms", "conventional-commits", "planning-workflow", "validation"]
+fragments = ["slint-conventions", "terse-comms", "conventional-commits", "planning-workflow", "validation", "work-summary", "project-scripts", "environment", "toolchain", "ai-tools"]
