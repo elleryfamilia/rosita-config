@@ -451,29 +451,6 @@ introduce npm/pnpm/yarn or a second lockfile. TypeScript sources run directly
 '''
 
 [[profiles]]
-name = "machine"
-targets = ["machine"]
-fragments = ["terse-comms", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
-
-# Rust repos: the language-agnostic working rules, scoped to the `rust` stack so
-# every Cargo project auto-binds it. Created in studio (originally mis-saved to
-# ~/.rosita/config.toml, which the loader never reads); relocated here.
-[[profiles]]
-name = "Rust Profile"
-targets = ["rust"]
-fragments = [
-  "terse-comms",
-  "conventional-commits",
-  "planning-workflow",
-  "validation",
-  "work-summary",
-  "project-scripts",
-  "environment",
-  "toolchain",
-  "ai-tools",
-]
-
-[[profiles]]
 name = "nextjs"
 targets = ["nextjs"]
 fragments = ["nextjs-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain"]
@@ -487,6 +464,11 @@ fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits"
 name = "bun"
 targets = ["bun"]
 fragments = ["terse-comms", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "work-summary", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
+
+[[profiles]]
+name = "rust + slint"
+targets = ["slint"]
+fragments = ["terse-comms", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "work-summary", "slint-conventions"]
 
 [[fragments]]
 id = "slint-conventions"
@@ -524,13 +506,15 @@ description = "Python conventions"
 category = "Stack Conventions"
 guidance = "Python project. Use uv for environments and dependencies, ruff for linting and formatting, and pytest for tests."
 
-# The `slint` profile binds when the `slint` target matches (see the [[targets]]
-# block in local.toml). On a box without that target it simply never matches, so
-# this is safe to keep in the shareable config.toml.
 [[profiles]]
-name = "slint"
-targets = ["slint"]
-fragments = ["slint-conventions", "terse-comms", "conventional-commits", "planning-workflow", "validation", "work-summary", "project-scripts", "environment", "toolchain", "ai-tools"]
+name = "machine"
+targets = ["machine"]
+fragments = ["terse-comms", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
+
+[[profiles]]
+name = "rust"
+targets = ["rust"]
+fragments = ["terse-comms", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "work-summary"]
 
 [[profiles]]
 name = "python"
