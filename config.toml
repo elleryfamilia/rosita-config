@@ -5,20 +5,43 @@
 # wherever you bind it). Edit these in `rosita studio` or here directly.
 
 [[fragments]]
-id = "terse-comms"
-description = "Terse communication"
+id = "comms-style"
+description = "Communication style"
 category = "Operating Style"
 guidance = '''
-Default to terse: lead with the result and what changed; skip preamble and
-don't restate the question.
+Use plain, direct language.
 
-For non-trivial decisions, briefly explain the reasoning, the tradeoffs, and the
-alternatives considered.
+Assume the user is technical, but do not assume they have all the current
+context in their head. Explain important ideas clearly before using shorthand.
 
-When asking the user to choose, make each option and its header self-contained:
-spell out what the choice means and its consequence in plain language. No
-undefined jargon, symbol soup, bare section references, or cryptic chips.
-Terseness is for prose — never at the cost of a readable decision.
+When reporting work:
+
+- Start with the result.
+- Explain what changed in plain language.
+- Say why it matters.
+- Use project labels like `D1`, `D2`, `scoped mode`, or `fallback` only after
+  briefly defining them.
+- Prefer short sentences over dense paragraphs.
+- Avoid abstract phrases like "cost calculus," "correct-by-construction," "spine
+  flipped," or "material finding" unless you immediately explain what they mean.
+- Do not over-compress reasoning into jargon-heavy summaries.
+- Use examples when a concept could be misunderstood.
+- Separate facts, decisions, risks, and next steps.
+
+Good style:
+
+> I fixed the import resolver. It was failing to connect files like `foo.js` to
+> the actual TypeScript file `foo.ts`. That meant the system could miss which
+> files depend on each other. The fix should make dependency lookups more
+> reliable.
+
+Avoid this style:
+
+> Resolver clobber fix completed; reverse-dependency graph repair landed and
+> scoped-mode eligibility materially changes the cost calculus.
+
+When asking the user to choose a direction, summarize each option in plain
+language and include the tradeoff in one sentence.
 '''
 
 [[fragments]]
@@ -364,23 +387,6 @@ success you didn't verify.
 '''
 
 [[fragments]]
-id = "work-summary"
-description = "Summarize done work + next steps"
-category = "Operating Style"
-guidance = '''
-When you finish a piece of work, close with two short, scannable bullet lists:
-
-- **Done** — one bullet per thing you completed, in plain language. Say what
-  changed and where, not how it was implemented. Anyone should be able to read
-  it and know what got done.
-- **Next steps** — one concrete action per bullet for what remains or should
-  follow. If nothing remains, say so explicitly rather than dropping the list.
-
-Keep both lists tight: no preamble, no restating the request, no burying the
-summary in prose.
-'''
-
-[[fragments]]
 id = "nextjs-conventions"
 description = "Next.js conventions"
 category = "Stack Conventions"
@@ -453,22 +459,22 @@ introduce npm/pnpm/yarn or a second lockfile. TypeScript sources run directly
 [[profiles]]
 name = "nextjs"
 targets = ["nextjs"]
-fragments = ["nextjs-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain"]
+fragments = ["nextjs-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
 
 [[profiles]]
 name = "go"
 targets = ["go"]
-fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "work-summary", "project-scripts", "environment", "toolchain"]
+fragments = ["go-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
 
 [[profiles]]
 name = "bun"
 targets = ["bun"]
-fragments = ["terse-comms", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "work-summary", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
+fragments = ["comms-style", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
 
 [[profiles]]
 name = "rust + slint"
 targets = ["slint"]
-fragments = ["terse-comms", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "work-summary", "slint-conventions"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions"]
 
 [[fragments]]
 id = "slint-conventions"
@@ -509,14 +515,14 @@ guidance = "Python project. Use uv for environments and dependencies, ruff for l
 [[profiles]]
 name = "machine"
 targets = ["machine"]
-fragments = ["terse-comms", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
+fragments = ["comms-style", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
 
 [[profiles]]
 name = "rust"
 targets = ["rust"]
-fragments = ["terse-comms", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "work-summary"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation"]
 
 [[profiles]]
 name = "python"
 targets = ["python"]
-fragments = ["python-conventions", "baseline", "terse-comms", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
+fragments = ["python-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
