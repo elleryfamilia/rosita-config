@@ -485,7 +485,7 @@ fragments = ["go-conventions", "baseline", "terse-comms", "conventional-commits"
 
 [[profiles]]
 name = "bun"
-targets = ["bun", "nextjs", "go", "python", "java"]
+targets = ["bun"]
 fragments = ["terse-comms", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "work-summary", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
 
 [[fragments]]
