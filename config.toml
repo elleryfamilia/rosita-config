@@ -456,22 +456,22 @@ introduce npm/pnpm/yarn or a second lockfile. TypeScript sources run directly
 - Keep secrets in `.env` (see `.env.example`) — never commit or log them.
 '''
 
-[[profiles]]
+[[loadouts]]
 name = "nextjs"
 targets = ["nextjs"]
 fragments = ["nextjs-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
 
-[[profiles]]
+[[loadouts]]
 name = "go"
 targets = ["go"]
 fragments = ["go-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
 
-[[profiles]]
+[[loadouts]]
 name = "bun"
 targets = ["bun"]
 fragments = ["comms-style", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
 
-[[profiles]]
+[[loadouts]]
 name = "rust + slint"
 targets = ["slint"]
 fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions"]
@@ -512,17 +512,17 @@ description = "Python conventions"
 category = "Stack Conventions"
 guidance = "Python project. Use uv for environments and dependencies, ruff for linting and formatting, and pytest for tests."
 
-[[profiles]]
+[[loadouts]]
 name = "machine"
 targets = ["machine"]
 fragments = ["comms-style", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
 
-[[profiles]]
+[[loadouts]]
 name = "rust"
 targets = ["rust"]
 fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation"]
 
-[[profiles]]
+[[loadouts]]
 name = "python"
 targets = ["python"]
 fragments = ["python-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
