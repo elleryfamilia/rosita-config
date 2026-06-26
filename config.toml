@@ -456,26 +456,6 @@ introduce npm/pnpm/yarn or a second lockfile. TypeScript sources run directly
 - Keep secrets in `.env` (see `.env.example`) — never commit or log them.
 '''
 
-[[loadouts]]
-name = "nextjs"
-targets = ["nextjs"]
-fragments = ["nextjs-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
-
-[[loadouts]]
-name = "go"
-targets = ["go"]
-fragments = ["go-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
-
-[[loadouts]]
-name = "bun"
-targets = ["bun"]
-fragments = ["comms-style", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
-
-[[loadouts]]
-name = "rust + slint"
-targets = ["slint"]
-fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions"]
-
 [[fragments]]
 id = "slint-conventions"
 description = "Slint GUI conventions"
@@ -513,19 +493,43 @@ category = "Stack Conventions"
 guidance = "Python project. Use uv for environments and dependencies, ruff for linting and formatting, and pytest for tests."
 
 [[loadouts]]
+name = "nextjs"
+targets = ["nextjs"]
+fragments = ["nextjs-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
+workflow = "superpowers"
+
+[[loadouts]]
+name = "go"
+targets = ["go"]
+fragments = ["go-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
+workflow = "superpowers"
+
+[[loadouts]]
+name = "bun"
+targets = ["bun"]
+fragments = ["comms-style", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
+workflow = "superpowers"
+
+[[loadouts]]
+name = "rust + slint"
+targets = ["slint"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions"]
+workflow = "superpowers"
+
+[[loadouts]]
 name = "machine"
-targets = ["machine"]
 fragments = ["comms-style", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
+workflow = "superpowers"
 
 [[loadouts]]
 name = "rust"
 targets = ["rust"]
 fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation"]
+workflow = "superpowers"
 
 [[loadouts]]
 name = "python"
 targets = ["python"]
 fragments = ["python-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
-
-[defaults]
 workflow = "superpowers"
+
