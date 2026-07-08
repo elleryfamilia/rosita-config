@@ -27,6 +27,13 @@ When reporting work:
 - Do not over-compress reasoning into jargon-heavy summaries.
 - Use examples when a concept could be misunderstood.
 - Separate facts, decisions, risks, and next steps.
+- No poetic or marketing prose: no slogans, no metaphors for technical
+  mechanisms, no clever parallelism, no evocative shorthand ("ambient",
+  "riding refresh", "one verb each"). State the literal mechanism: which
+  command runs, when it runs, and what it does.
+- Use words with exactly one technical interpretation. If a phrase could
+  mean two things to a reader, replace it with the concrete behavior.
+- Short sentences means complete short sentences, not headline fragments.
 
 Good style:
 
@@ -39,6 +46,17 @@ Avoid this style:
 
 > Resolver clobber fix completed; reverse-dependency graph repair landed and
 > scoped-mode eligibility materially changes the cost calculus.
+
+Also avoid this style:
+
+> v0.10 Guard (secret redaction, doctor-lite riding refresh) — all ambient,
+> no new habits.
+
+Say instead:
+
+> Release 0.10 adds two things: secret redaction that runs during rendering,
+> and a fast subset of doctor checks that run automatically inside
+> `load refresh`. You do not need to run any new command.
 
 When asking the user to choose a direction, summarize each option in plain
 language and include the tradeoff in one sentence.
