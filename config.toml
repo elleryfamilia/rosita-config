@@ -510,6 +510,32 @@ description = "Python conventions"
 category = "Stack Conventions"
 guidance = "Python project. Use uv for environments and dependencies, ruff for linting and formatting, and pytest for tests."
 
+[[fragments]]
+id = "rust-build-cache-hygiene"
+description = "Rust build cache hygiene (worktrees + redirected target dirs)"
+category = "Stack Conventions"
+guidance = '''
+A Rust project's build cache may be redirected outside the repo — via a
+`./target` symlink, `CARGO_TARGET_DIR`, or a `build.target-dir` config — for
+example onto an external drive. A redirected cache is NOT deleted when its git
+worktree is removed, so orphaned caches (often tens of GB) accumulate silently.
+
+- Before assuming builds land in `./target`, check how it resolves: is it a
+  symlink, or is `CARGO_TARGET_DIR` set? On this machine `cargo-target status`
+  reports the managed setup (one cache dir per worktree under
+  `/Volumes/External/cargo-target`; currently used by zerminal).
+- When creating a git worktree of a project with a redirected target, set up
+  the same redirection for the new worktree (here: `cargo-target link`) so
+  large builds don't silently land on the internal disk.
+- When removing a worktree, check whether its cache lives outside the worktree.
+  If it does, it becomes an orphan — report its size and offer to delete it.
+  To find existing orphans: compare `git worktree list` against the cache
+  directory listing.
+- `cargo clean` through a symlinked `./target` deletes only the symlink and
+  frees no space. To reclaim space, delete the backing cache dir, then restore
+  the symlink (here: `cargo-target link`).
+'''
+
 [[loadouts]]
 name = "nextjs"
 targets = ["nextjs"]
@@ -531,7 +557,7 @@ workflow = "superpowers"
 [[loadouts]]
 name = "rust + slint"
 targets = ["slint"]
-fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions", "rust-build-cache-hygiene"]
 workflow = "superpowers"
 
 [[loadouts]]
@@ -542,7 +568,7 @@ workflow = "superpowers"
 [[loadouts]]
 name = "rust"
 targets = ["rust"]
-fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "rust-build-cache-hygiene"]
 workflow = "superpowers"
 
 [[loadouts]]
