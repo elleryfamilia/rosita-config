@@ -14,3 +14,13 @@ rosita-receipt.json
 
 # machine-specific self-update timestamp (must not sync across boxes)
 update-check
+# load sync — keep machine-private and generated files out of the repo.
+local.toml
+bindings.toml
+generated/
+cache/
+logs/
+run/
+update-check
+loadout-receipt.json
+.DS_Store
