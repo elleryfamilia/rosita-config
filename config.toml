@@ -577,3 +577,6 @@ targets = ["python"]
 fragments = ["python-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline"]
 workflow = "superpowers"
 
+[learn]
+enabled = true
+
