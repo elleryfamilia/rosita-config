@@ -578,5 +578,5 @@ fragments = ["python-conventions", "baseline", "comms-style", "conventional-comm
 workflow = "superpowers"
 
 [learn]
-enabled = true
+enabled = false
 
