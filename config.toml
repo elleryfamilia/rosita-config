@@ -581,6 +581,7 @@ workflow = "superpowers"
 name = "Java"
 targets = ["java"]
 fragments = ["comms-style", "guardrails", "conventional-commits"]
+workflow = "superpowers"
 
 [learn]
 enabled = false
