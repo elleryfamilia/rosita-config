@@ -1,15 +1,9 @@
-# rosita global config — a dogfooded port of ~/.claude/CLAUDE.md.
-#
-# Each section of the global CLAUDE.md becomes one reusable fragment; the
-# `machine` profile composes them into the overlay rosita renders off-repo (or
-# wherever you bind it). Edit these in `rosita studio` or here directly.
-
 [[fragments]]
 id = "comms-style"
 description = "Communication style"
 category = "Operating Style"
-guidance = '''
-Use plain, direct language.
+guidance = """
+Use plain, direct language at an 8th grade reading level.
 
 Assume the user is technical, but do not assume they have all the current
 context in their head. Explain important ideas clearly before using shorthand.
@@ -46,6 +40,8 @@ Avoid this style:
 
 > Resolver clobber fix completed; reverse-dependency graph repair landed and
 > scoped-mode eligibility materially changes the cost calculus.
+> load-bearing
+> honest
 
 Also avoid this style:
 
@@ -60,7 +56,7 @@ Say instead:
 
 When asking the user to choose a direction, summarize each option in plain
 language and include the tradeoff in one sentence.
-'''
+"""
 
 [[fragments]]
 id = "guardrails"
