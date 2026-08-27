@@ -532,39 +532,48 @@ worktree is removed, so orphaned caches (often tens of GB) accumulate silently.
   the symlink (here: `cargo-target link`).
 '''
 
+[[fragments]]
+id = "mind-context-window-size"
+description = "Mind context window size"
+category = "Operating Style"
+guidance = """
+# Be aware of context window size
+
+When context window starts getting large that it may impact the quality of output, propose clearing or compact it. Be sure you have stored all necessarey context, and also provide me with what to paste back after clearing or compacting, or any message to include in the compact invokation."""
+
 [[loadouts]]
 name = "nextjs"
 targets = ["nextjs"]
-fragments = ["nextjs-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
+fragments = ["nextjs-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain", "mind-context-window-size"]
 workflow = "superpowers"
 
 [[loadouts]]
 name = "go"
 targets = ["go"]
-fragments = ["go-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain"]
+fragments = ["go-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain", "mind-context-window-size"]
 workflow = "superpowers"
 
 [[loadouts]]
 name = "bun"
 targets = ["bun"]
-fragments = ["comms-style", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build"]
+fragments = ["comms-style", "conventional-commits", "environment", "containers", "toolchain", "project-scripts", "baseline", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "bun-conventions", "development-phase-active-initial-build", "mind-context-window-size"]
 workflow = "superpowers"
 
 [[loadouts]]
 name = "rust + slint"
 targets = ["slint"]
-fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions", "rust-build-cache-hygiene"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "slint-conventions", "rust-build-cache-hygiene", "mind-context-window-size"]
 workflow = "superpowers"
 
 [[loadouts]]
 name = "machine"
-fragments = ["comms-style", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation"]
+fragments = ["comms-style", "guardrails", "conventional-commits", "environment", "host", "tailnet", "containers", "ai-tools", "toolchain", "planning-workflow", "validation", "mind-context-window-size"]
 workflow = "superpowers"
 
 [[loadouts]]
 name = "rust"
 targets = ["rust"]
-fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "rust-build-cache-hygiene"]
+fragments = ["comms-style", "conventional-commits", "environment", "ai-tools", "toolchain", "project-scripts", "planning-workflow", "validation", "rust-build-cache-hygiene", "mind-context-window-size"]
 workflow = "superpowers"
 
 [[loadouts]]
