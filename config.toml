@@ -541,6 +541,34 @@ guidance = """
 
 When context window starts getting large that it may impact the quality of output, propose clearing or compact it. Be sure you have stored all necessarey context, and also provide me with what to paste back after clearing or compacting, or any message to include in the compact invokation."""
 
+[[fragments]]
+id = "node-conventions"
+description = "Node + TypeScript conventions"
+category = "Stack Conventions"
+guidance = '''
+Node project. Use pnpm for dependencies and scripts (`pnpm install`,
+`pnpm run <script>`, `pnpm dlx`); don't introduce npm/yarn/bun or a second
+lockfile. In a pnpm workspace, run a single package's script with
+`pnpm --filter <package> <script>` and add dependencies to the package that
+uses them, not the workspace root.
+
+- Prefer TypeScript over plain JavaScript for new files. Keep the existing
+  `tsconfig` settings; don't loosen strictness to make an error go away.
+- Build, test, lint, and format through the scripts in `package.json`, using the
+  tools the repo already has. Don't add a second linter, formatter, or test
+  runner.
+- Keep secrets in `.env` — never commit or log them.
+'''
+
+# A Node project that is not Next.js or bun. The built-in `node` target also
+# matches those, which would make them match two loadouts. Target rules have no
+# "not", so this is a script.
+[[targets]]
+id = "plain-node"
+description = "Node project that is not Next.js or bun"
+icon = "node"
+rule = { kind = "script", command = "test -f package.json && ! test -e bun.lock && ! test -e bun.lockb && ! ls next.config.* >/dev/null 2>&1" }
+
 [[loadouts]]
 name = "nextjs"
 targets = ["nextjs"]
@@ -588,6 +616,22 @@ targets = ["java"]
 fragments = ["comms-style", "guardrails", "conventional-commits"]
 workflow = "superpowers"
 
+[[loadouts]]
+name = "node"
+targets = ["plain-node"]
+fragments = ["node-conventions", "baseline", "comms-style", "conventional-commits", "branch-discipline", "secrets-hygiene", "ask-before-risky", "validate-before-done", "testing-discipline", "project-scripts", "environment", "toolchain", "mind-context-window-size"]
+workflow = "superpowers"
+
 [learn]
 enabled = false
 
+# DeepSeek Harness — local hard-config, not a loadout feature.
+# DSH's instruction loader only reads files, and a file goes stale, so a
+# SessionStart hook (below, via @deepseek-ai/dsh-hooks-claude-code) re-renders
+# this overlay for the session's own repo and injects it. No `launch` on
+# purpose: DSH needs an explicit --profile and is normally started with npx.
+[[agents]]
+id = "dsh"
+display_name = "DeepSeek Harness"
+generated_filename = "dsh.md"
+wire_hint = "DSH gets this overlay from a SessionStart hook (~/.dsh/loadout-hooks.json -> ~/.dsh/loadout-session-context.sh), not from a file."
